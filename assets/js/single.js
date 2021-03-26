@@ -1,4 +1,24 @@
 var issueContainerEl = document.querySelector("#issues-container");
+var limitWarningEl = document.querySelector("#limit-warning");
+var repoNameEl = document.querySelector("#repo-name");
+
+
+//getting the repoName from the URL
+var getRepoName = function(){
+    var queryString = document.location.search;
+    var repoName = queryString.split("=")[1];
+
+    //check if reponame is available 
+    //if yes then display the repoName and get the repo issues
+    //else take the user back to index.html page
+    if(repoName) {
+        getRepoIssues(repoName);
+        repoNameEl.textContent = repoName;
+    } else {
+        document.location.replace("./index.html");
+    }
+
+}
 
 var getRepoIssues = function(repo){
     //console.log(repo);
@@ -12,16 +32,25 @@ var getRepoIssues = function(repo){
             console.log(data);
             // pass response data to dom function
             displayIssues(data);
+
+            // check if api has paginated issues
+            if (response.headers.get("Link")){
+                displayWarning(repo);
+                console.log("repo has more than 30 issues");
+            }
         });
         } else {
-            alert("There was a problem with your request!");
+            //alert("There was a problem with your request!");
+
+            // if not successful, redirect to homepage
+            document.location.replace("./index.html");
         }
     });
     
 
 }
-
-getRepoIssues("deepikabekal/run-buddy");
+//hardcoded input
+//getRepoIssues("facebook/react");
 
 var displayIssues = function(issues){
      //check if there are issues in the repo
@@ -62,4 +91,18 @@ var displayIssues = function(issues){
 
     }
 
-}
+};
+
+var displayWarning = function(repo){
+    //add text to the warning container
+    limitWarningEl.textContent = "To see more than 30 issues, visit ";
+    var linkEl = document.createElement("a");
+    linkEl.textContent = "See More Issues on GitHub.com";
+    linkEl.setAttribute("href","https://github.com/" + repo + "/issues");
+    linkEl.setAttribute("target", "_blank");
+
+    //append to warning container
+    limitWarningEl.appendChild(linkEl);
+};
+
+getRepoName();
